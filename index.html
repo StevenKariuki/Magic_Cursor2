@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<meta http-equiv="return" content="5">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Cursor</title>
+    <style>
+        html, body {
+	padding: 0;
+	margin: 0;
+}
+
+body {
+	color: #666;
+	font: 15px sans-serif;
+	background: #111111;
+	overflow: hidden;
+	-webkit-user-select: none;
+	cursor: default;
+}
+
+b {
+	color: #999;
+	font-weight: 300;
+}
+
+
+
+.stats {
+	width: 150px;
+	padding: 2px 5px;
+	line-height: 1em;
+	position: absolute;
+	background: fade(#fff, 10%);
+	display: table;
+	border-spacing: 5px;
+
+	& > div {
+		display: table-row;
+
+		span {
+			width: 70%;
+		}
+
+		span, b {
+			display: table-cell;
+		}
+
+	}
+}
+
+part {
+	@color: #fd0;
+	@glowColor: #fed;
+	pointer-events: none;
+	display: block;
+	position: absolute;
+	z-index: 100;
+	width: 9px;
+	height: 9px;
+	margin: -4px;
+	opacity: 0;
+	background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAKpJREFUeNpi/L+IgZGBgYEZiFmgmAmI/wHxHyj+ywJVwAXEfFDMCsS/gfgTFH+D6QZJSgGxBBBzAPEPIH7BAAG/kBVJMBj4ZDEISjsyvH+6n+HClmlAsS9A/IEJ6gZWsAlCMi4MTExsYIUQE8FuhDnyN9iKd0/2MPz/9wtsEsRKkMP/MQJ9B9IhgsNNz4D4DQtU9SeoI79g8d0fkKK/IG+CfAFyJLZwAggwAL7rODKpW/oeAAAAAElFTkSuQmCC') no-repeat;
+
+	/*background: @color;
+	border: 2px solid @color;
+	box-shadow:
+		0px 0px 2px 2px fade(@glowColor, 30%),
+		0px 0px 0px 2px fade(@glowColor, 30%)*/
+;
+}
+    </style>
+</head>
+<body>
+    	<div class="stats">
+		<div class="particles"><span>Particles: </span><b>0</b></div>
+		<div class="fps"><span>FPS:</span><b>0</b></div>
+	</div>
+   <center> <h1>MY NAME IS STEVEN</h1></center>
+   <div>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus ducimus pariatur, iusto fugit placeat perspiciatis qui. Exercitationem velit est quia architecto minus debitis tempore veritatis, rerum dolorum, ea culpa. Excepturi.</p>
+
+    <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Vel facere unde quaerat sapiente suscipit, magni quod sed reprehenderit labore rerum ad reiciendis quia accusamus adipisci cupiditate dolorum nemo placeat numquam.</p>
+   </div>
+
+    <script>
+        var makeCool,
+	timeout = 1.25,
+	i,
+	rules = '',
+	frames,
+	style,
+	steps = 10,
+    gForce = 80,
+	pX, pY,
+	totalParticles = 0,
+	particlesDiv = document.querySelector('.particles b'),
+	fpsDiv = document.querySelector('.fps b'),
+	prevTime = performance.now(),
+	lastTimes = [],
+	randomAnis = 111,
+	particles = [];
+
+if ( !window.requestAnimationFrame ) {
+
+	window.requestAnimationFrame = ( function() {
+
+		return window.webkitRequestAnimationFrame ||
+			window.mozRequestAnimationFrame ||
+			window.oRequestAnimationFrame ||
+			window.msRequestAnimationFrame ||
+			function( /* function FrameRequestCallback */ callback, /* DOMElement Element */ element ) {
+
+				window.setTimeout( callback, 1000 / 60 );
+
+			};
+
+	} )();
+
+}
+
+function addParticles(count) {
+	var fragment = document.createDocumentFragment(),
+		part;
+	for(var i = count; i--; ) {
+		part = document.createElement('part');
+		particles.push(part)
+		fragment.appendChild(part);
+	}
+	document.body.appendChild(fragment);
+}
+
+function jsonToCss(json) {
+	var result = '{ ';
+	Object.keys(json).forEach(function (key) {
+		result += key + ': ' + json[key] + '; ';
+	});
+	result += '}';
+	return result
+}
+
+var s = 2, a, x, y, ys;
+
+for (i = randomAnis; i--;) {
+	a = 2 * Math.PI * Math.random();
+	x = Math.cos(a) * s;
+	y = Math.sin(a) * s;
+
+	rules += '@keyframes drop' + i + ' { \r\n';
+
+	frames = {};
+
+	ys = y * gForce / steps;
+
+	for (var t = 0; t <= 100; t += 100 / steps) {
+		frames[t + '%'] = {
+			opacity: (Math.pow(Math.max(0, 1 - t / 100 + (t < 30 ? 0 : 1) * (Math.random() - 0.5)), 0.7)).toFixed(2),
+			transform: 'translate(' + (x * t | 0) + 'px, ' + (y | 0) + 'px) scale(' + (.9 - t/200).toFixed(1) +')'
+		}
+		y += ys;
+		ys += gForce / steps;
+	}
+
+	frames['100%'].opacity = '0';
+
+	Object.keys(frames).forEach(function (val) {
+		rules += '\t' + val + '  \t' + jsonToCss(frames[val]) + '\r\n';
+	});
+	rules += '}\r\n\r\n';
+}
+
+
+
+style = document.createElement('style');
+style.innerHTML = rules;
+document.head.appendChild(style);
+addParticles(500);
+
+makeCool = function (event) {
+	var start = Date.now(),
+		slice,
+		part,
+		i,
+		x = event.clientX,
+		y = event.clientY,
+		dX = pX - x,
+		dY = pY - y,
+		length = Math.pow(Math.pow(dX, 2) + Math.pow(dY, 2), 0.25) | 0;
+
+	if (particles.length < length) {
+		addParticles(Math.max(length, 100) * 1.5);
+	}
+
+	slice = particles.splice(0, length);
+	//console.log(slice);
+
+	for (i = length; i--;) {
+		part = slice[i];
+		part.style.left = pX - dX * (i / length) + 'px';
+		part.style.top = pY - dY * (i / length) + 'px';
+		part.style.webkitAnimation = 'drop' + (Math.random() * randomAnis | 0) + ' ' + timeout + 's linear';
+		part.style.animation = part.style.webkitAnimation;
+	}
+
+	pX = event.clientX;
+	pY = event.clientY;
+
+	totalParticles += length;
+
+	setTimeout(function () {
+		for (i = length; i--;) {
+			part = slice[i];
+			part.style.webkitAnimation = '';
+			part.style.animation = part.style.webkitAnimation;
+		}
+		particles.push.apply(particles, slice);
+		slice = null;
+		totalParticles -= length;
+		particlesDiv.textContent  = totalParticles + ',' + particles.length;
+	}, timeout * 1000);
+	particlesDiv.textContent  = totalParticles + ',' + particles.length;
+};
+
+
+document.addEventListener('mouseover', function (event) {
+	pX = event.clientX;
+	pY = event.clientY;
+});
+document.addEventListener('mousemove', makeCool, true);
+
+
+function storeFPS(ts) {
+	lastTimes.push(Math.max(1, -prevTime + (prevTime = performance.now())));
+	requestAnimationFrame(storeFPS);
+}
+requestAnimationFrame(storeFPS);
+
+setInterval(function () {
+	fpsDiv.textContent  = (1000 * lastTimes.length / lastTimes.reduce(function (a, b) {
+		return a + b
+	})).toFixed(1);
+	lastTimes = [];
+}, 250);
+
+    </script>
+</body>
+</html>
